@@ -3,41 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEROVEE - Vault</title>
+    <title>HEROVEE - Secure Vault</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@400;600&display=swap');
         body { background: #0b0d11; color: white; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px; }
         
-        /* নেভিগেশন */
         .nav { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #333; }
-        .logo { font-family: 'Orbitron', sans-serif; color: #d4af37; letter-spacing: 2px; }
-        .logout { color: #ff3c7b; cursor: pointer; font-size: 22px; transition: 0.3s; }
+        .logo { font-family: 'Orbitron', sans-serif; color: #d4af37; }
 
-        /* আপলোড সেকশন */
+        /* টোকেন বক্স ডিজাইন */
+        .token-container { margin: 20px 0; text-align: left; }
+        .token-input { width: 100%; padding: 12px; background: #12161b; border: 1px solid #d4af37; border-radius: 8px; color: #d4af37; outline: none; font-family: monospace; }
+        
         #pBarContainer { display: none; width: 100%; background: #222; height: 6px; margin: 20px 0; border-radius: 10px; overflow: hidden; }
-        #pBar { height: 100%; width: 0%; background: linear-gradient(90deg, #d4af37, #f9e29c); transition: 0.3s; }
-        .upload-trigger { margin: 20px 0; padding: 40px 20px; border: 2px dashed #d4af37; border-radius: 20px; text-align: center; cursor: pointer; background: rgba(212, 175, 55, 0.05); }
-        .upload-trigger i { font-size: 40px; color: #d4af37; margin-bottom: 10px; }
+        #pBar { height: 100%; width: 0%; background: #d4af37; transition: 0.3s; }
 
-        /* গ্যালারি */
-        .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 25px; }
-        .img-card { aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #12161b; border: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .upload-trigger { margin: 20px 0; padding: 40px 20px; border: 2px dashed #ff3c7b; border-radius: 20px; text-align: center; cursor: pointer; background: rgba(255, 60, 123, 0.05); }
+        .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 25px; }
+        .img-card { aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #12161b; border: 1px solid #333; position: relative; }
         .img-card img { width: 100%; height: 100%; object-fit: cover; }
-        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(255, 60, 123, 0.8); border: none; color: white; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
     <div class="nav">
         <h2 class="logo">HEROVEE</h2>
-        <i class="fas fa-sign-out-alt logout" id="logoutBtn" title="Logout"></i>
+        <i class="fas fa-sign-out-alt" id="logoutBtn" style="color:#ff3c7b; cursor:pointer;"></i>
+    </div>
+
+    <div class="token-container">
+        <label style="font-size: 10px; color: #888;">GITHUB ACCESS TOKEN:</label>
+        <input type="password" id="githubToken" class="token-input" placeholder="Paste your Ghp_... token here">
     </div>
 
     <div id="pBarContainer"><div id="pBar"></div></div>
 
     <div class="upload-trigger" onclick="document.getElementById('fileInp').click()">
-        <i class="fas fa-shield-alt"></i>
-        <p style="font-weight: 600;">TAP TO SECURE PHOTO</p>
+        <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: #ff3c7b;"></i>
+        <p>TAP TO SECURE PHOTOS</p>
         <input type="file" id="fileInp" accept="image/*" multiple hidden>
     </div>
 
@@ -47,48 +50,36 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAEl8t2m_HZ1oNOC49lmpiiM4-XhGzWRfE",
-            authDomain: "herovee.firebaseapp.com",
-            projectId: "herovee",
-            appId: "1:700112828047:web:988f0598b5341a29bba2fa"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyAEl8t2m_HZ1oNOC49lmpiiM4-XhGzWRfE", authDomain: "herovee.firebaseapp.com", projectId: "herovee", appId: "1:700112828047:web:988f0598b5341a29bba2fa" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // গিটহাব কনফিগ
-        const TOKEN = "Ghp_g9UB5eMe7TQWVv8iUNeVAEiQvy3kfS1qrlzi"; 
         const USER = "SIYAMBOSS";
         const REPO = "Herovee1";
         let userEmailPath = "";
 
-        // লগইন চেক ও ইউজার পাথ সেটআপ
         onAuthStateChanged(auth, user => {
             if (user) {
                 userEmailPath = user.email.replace(/[^a-zA-Z0-9]/g, "_");
-                loadGallery();
-            } else {
-                window.location.href = "index.html"; 
-            }
+                // গ্যালারি দেখার সময় যদি টোকেন থাকে তবে লোড হবে
+                const savedToken = document.getElementById('githubToken').value;
+                if(savedToken) loadGallery(savedToken);
+            } else { window.location.href = "index.html"; }
         });
 
-        // লগআউট
         document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
-        // গ্যালারি লোড
-        async function loadGallery() {
+        // গ্যালারি লোড ফাংশন
+        async function loadGallery(token) {
             const url = `https://api.github.com/repos/${USER}/${REPO}/contents/vault/${userEmailPath}`;
-            const res = await fetch(url, { headers: { "Authorization": `token ${TOKEN}` } });
+            const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
             if (res.ok) {
                 const data = await res.json();
                 const gal = document.getElementById('gallery');
                 gal.innerHTML = "";
                 data.reverse().forEach(file => {
-                    if(file.type === "file"){
-                        const div = document.createElement('div');
-                        div.className = "img-card";
-                        div.innerHTML = `<img src="${file.download_url}"><button class="del-btn" onclick="deleteImg('${file.path}', '${file.sha}')"><i class="fas fa-trash"></i></button>`;
-                        gal.appendChild(div);
+                    if(file.type === "file") {
+                        gal.innerHTML += `<div class="img-card"><img src="${file.download_url}"></div>`;
                     }
                 });
             }
@@ -96,10 +87,16 @@
 
         // আপলোড লজিক
         document.getElementById('fileInp').onchange = async (e) => {
+            const token = document.getElementById('githubToken').value;
+            if(!token) {
+                alert("Please paste your GitHub Token first!");
+                return;
+            }
+
             const files = e.target.files;
             if(!files.length) return;
-            document.getElementById('pBarContainer').style.display = 'block';
             
+            document.getElementById('pBarContainer').style.display = 'block';
             for(let i=0; i<files.length; i++) {
                 document.getElementById('pBar').style.width = ((i+1)/files.length*100) + "%";
                 const reader = new FileReader();
@@ -108,28 +105,17 @@
                     reader.onload = async () => {
                         const content = reader.result.split(',')[1];
                         const path = `vault/${userEmailPath}/${Date.now()}_img.png`;
-                        await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${path}`, {
+                        const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${path}`, {
                             method: "PUT",
-                            headers: { "Authorization": `token ${TOKEN}`, "Content-Type": "application/json" },
-                            body: JSON.stringify({ message: "vault_up", content: content })
+                            headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                            body: JSON.stringify({ message: "upload", content: content })
                         });
                         resolve();
                     };
                 });
             }
             document.getElementById('pBarContainer').style.display = 'none';
-            loadGallery();
-        };
-
-        // ডিলিট ফাংশন (গ্লোবাল স্কোপে রাখার জন্য window অবজেক্টে সেট করা)
-        window.deleteImg = async (path, sha) => {
-            if(!confirm("Delete this photo?")) return;
-            await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${path}`, {
-                method: "DELETE",
-                headers: { "Authorization": `token ${TOKEN}` },
-                body: JSON.stringify({ message: "del", sha: sha })
-            });
-            loadGallery();
+            loadGallery(token);
         };
     </script>
 </body>
