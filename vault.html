@@ -8,173 +8,192 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap');
         
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
             font-family: 'Inter', sans-serif;
-            background: #0b0d11; /* আপনার সাইটের ডার্ক থিম */
+            background: #0b0d11;
             color: white;
             text-align: center;
-            margin: 0;
             padding: 20px;
         }
 
         h1 {
             font-family: 'Orbitron', sans-serif;
-            margin-top: 30px;
+            margin: 20px 0;
             color: #45f3ff;
-            letter-spacing: 3px;
-            text-shadow: 0 0 15px rgba(69, 243, 255, 0.5);
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(69, 243, 255, 0.3);
         }
 
-        /* আপলোড সেকশন */
-        .upload-container {
-            margin: 30px auto;
-            width: 90%;
-            max-width: 400px;
-            padding: 20px;
-            border: 2px dashed #ff3c7b;
-            border-radius: 20px;
-            background: rgba(255, 60, 123, 0.05);
-            cursor: pointer;
-        }
-
-        /* প্রগ্রেস বার */
-        #progressContainer {
+        #pContainer {
             display: none;
-            width: 90%;
+            width: 100%;
             max-width: 400px;
             background: #222;
-            height: 10px;
+            height: 8px;
             border-radius: 10px;
             margin: 20px auto;
             overflow: hidden;
+            border: 1px solid #333;
         }
-        #progressBar {
+        #pBar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #45f3ff, #ff3c7b);
+            background: linear-gradient(90deg, #ff3c7b, #45f3ff);
             transition: 0.3s;
         }
 
-        /* গ্যালারি গ্রিড */
+        .upload-area {
+            margin: 20px auto;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 20px;
+            border: 2px dashed #ff3c7b;
+            border-radius: 20px;
+            background: rgba(255, 60, 123, 0.03);
+            cursor: pointer;
+        }
+        .upload-area i { font-size: 40px; color: #ff3c7b; margin-bottom: 10px; }
+
         .gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin-top: 30px;
-            padding-bottom: 50px;
         }
 
-        .gallery img {
-            width: 100%;
+        .gallery-item {
+            position: relative;
             aspect-ratio: 1;
-            object-fit: cover;
             border-radius: 12px;
+            overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
             background: #161a21;
         }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 60, 123, 0.9);
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
-
 <body>
 
     <h1>🔐 HEROVEE VAULT</h1>
 
-    <div id="progressContainer">
-        <div id="progressBar"></div>
+    <div id="pContainer">
+        <div id="pBar"></div>
     </div>
 
-    <div class="upload-container" onclick="document.getElementById('upload').click()">
-        <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: #ff3c7b; margin-bottom: 10px;"></i>
-        <p style="font-weight: 600;">TAP TO SECURE PHOTO</p>
-        <input type="file" id="upload" accept="image/*" multiple hidden>
+    <div class="upload-area" onclick="document.getElementById('fileInp').click()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p style="font-weight: 600; font-size: 14px;">TAP TO UPLOAD PHOTOS</p>
+        <input type="file" id="fileInp" accept="image/*" multiple hidden>
     </div>
 
     <div class="gallery" id="gallery"></div>
 
     <script type="module">
-        const TOKEN = "Ghp_g9UB5eMe7TQWVv8iUNeVAEiQvy3kfS1qrlzi";
+        // নতুন টোকেন আপডেট করা হয়েছে
+        const TOKEN = "Ghp_eOT6XnJ4iSJ3asYe6ywhFVQxBnNNnM2CnZrl";
         const USER = "SIYAMBOSS";
         const REPO = "Herovee1";
-        
-        let gallery = document.getElementById("gallery");
-        let upload = document.getElementById("upload");
-        let pContainer = document.getElementById("progressContainer");
-        let pBar = document.getElementById("progressBar");
+        const FOLDER = "vault";
 
-        // ১. পেজ লোড হলে গিটহাব থেকে ছবি আনা
-        loadImages();
+        const gallery = document.getElementById("gallery");
+        const fileInp = document.getElementById("fileInp");
+        const pContainer = document.getElementById("pContainer");
+        const pBar = document.getElementById("pBar");
 
-        upload.addEventListener("change", async function() {
-            let files = upload.files;
-            if (files.length === 0) return;
-
-            pContainer.style.display = "block";
-
-            for (let i = 0; i < files.length; i++) {
-                let file = files[i];
-                
-                // প্রগ্রেস আপডেট
-                let percent = Math.round(((i + 1) / files.length) * 100);
-                pBar.style.width = percent + "%";
-
-                let reader = new FileReader();
-                reader.readAsDataURL(file);
-
-                await new Promise((resolve) => {
-                    reader.onload = async function() {
-                        let base64 = reader.result.split(',')[1];
-                        let fileName = Date.now() + "_" + file.name.replace(/\s/g, "_");
-
-                        // গিটহাবে আপলোড
-                        try {
-                            await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/vault/${fileName}`, {
-                                method: "PUT",
-                                headers: { 
-                                    "Authorization": `token ${TOKEN}`,
-                                    "Content-Type": "application/json" 
-                                },
-                                body: JSON.stringify({ 
-                                    message: "upload photo", 
-                                    content: base64 
-                                })
-                            });
-                        } catch (err) { console.log("Upload failed", err); }
-                        
-                        resolve();
-                    }
-                });
-            }
-
-            pContainer.style.display = "none";
-            pBar.style.width = "0%";
-            loadImages(); // গ্যালারি রিফ্রেশ
-        });
-
-        function displayImage(src) {
-            let img = document.createElement("img");
-            img.src = src;
-            img.loading = "lazy"; // ফাস্ট লোডিংয়ের জন্য
-            gallery.insertBefore(img, gallery.firstChild); // নতুন ছবি আগে দেখাবে
-        }
-
-        async function loadImages() {
+        async function loadVault() {
             try {
-                let res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/vault`, {
+                const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FOLDER}`, {
                     headers: { "Authorization": `token ${TOKEN}` }
                 });
 
                 if (res.ok) {
-                    let data = await res.json();
-                    gallery.innerHTML = ""; // আগের গুলো ক্লিয়ার করা
-                    data.forEach(file => {
+                    const files = await res.json();
+                    gallery.innerHTML = "";
+                    files.reverse().forEach(file => {
                         if (file.type === "file") {
-                            displayImage(file.download_url);
+                            createImgElement(file.download_url, file.path, file.sha);
                         }
                     });
                 }
-            } catch (err) { console.log("Load failed", err); }
+            } catch (err) { console.error("Load Error:", err); }
         }
-    </script>
 
+        function createImgElement(src, path, sha) {
+            const div = document.createElement("div");
+            div.className = "gallery-item";
+            const img = document.createElement("img");
+            img.src = src;
+            const del = document.createElement("button");
+            del.className = "delete-btn";
+            del.innerHTML = '<i class="fas fa-trash"></i>';
+            del.onclick = () => deletePhoto(path, sha);
+            div.appendChild(img);
+            div.appendChild(del);
+            gallery.appendChild(div);
+        }
+
+        fileInp.onchange = async () => {
+            const files = fileInp.files;
+            if (files.length === 0) return;
+            pContainer.style.display = "block";
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                pBar.style.width = ((i + 1) / files.length * 100) + "%";
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                await new Promise(resolve => {
+                    reader.onload = async () => {
+                        const base64 = reader.result.split(',')[1];
+                        const fileName = `${FOLDER}/${Date.now()}_${file.name.replace(/\s/g, "_")}`;
+                        await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${fileName}`, {
+                            method: "PUT",
+                            headers: { "Authorization": `token ${TOKEN}` },
+                            body: JSON.stringify({ message: "upload", content: base64 })
+                        });
+                        resolve();
+                    };
+                });
+            }
+            pContainer.style.display = "none";
+            pBar.style.width = "0%";
+            loadVault();
+        };
+
+        async function deletePhoto(path, sha) {
+            if (!confirm("Delete this photo?")) return;
+            await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${path}`, {
+                method: "DELETE",
+                headers: { "Authorization": `token ${TOKEN}` },
+                body: JSON.stringify({ message: "delete", sha: sha })
+            });
+            loadVault();
+        }
+
+        loadVault();
+    </script>
 </body>
 </html>
