@@ -3,44 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEROVEE - Secure Vault</title>
+    <title>HEROVEE - Private Vault</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@400;600&display=swap');
         body { background: #0b0d11; color: white; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px; }
-        
         .nav { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #333; }
         .logo { font-family: 'Orbitron', sans-serif; color: #d4af37; }
 
-        /* টোকেন বক্স ডিজাইন */
-        .token-container { margin: 20px 0; text-align: left; }
-        .token-input { width: 100%; padding: 12px; background: #12161b; border: 1px solid #d4af37; border-radius: 8px; color: #d4af37; outline: none; font-family: monospace; }
+        .token-box { margin: 20px 0; background: #12161b; padding: 15px; border-radius: 12px; border: 1px solid #d4af3733; }
+        .token-input { width: 100%; padding: 10px; background: #080a0c; border: 1px solid #444; border-radius: 6px; color: #d4af37; outline: none; margin-top: 10px; }
         
         #pBarContainer { display: none; width: 100%; background: #222; height: 6px; margin: 20px 0; border-radius: 10px; overflow: hidden; }
-        #pBar { height: 100%; width: 0%; background: #d4af37; transition: 0.3s; }
+        #pBar { height: 100%; width: 0%; background: linear-gradient(90deg, #d4af37, #f9e29c); transition: 0.3s; }
 
-        .upload-trigger { margin: 20px 0; padding: 40px 20px; border: 2px dashed #ff3c7b; border-radius: 20px; text-align: center; cursor: pointer; background: rgba(255, 60, 123, 0.05); }
+        .upload-trigger { margin: 20px 0; padding: 35px; border: 2px dashed #ff3c7b; border-radius: 15px; text-align: center; cursor: pointer; background: rgba(255, 60, 123, 0.05); }
         .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 25px; }
-        .img-card { aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #12161b; border: 1px solid #333; position: relative; }
+        .img-card { aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: #12161b; border: 1px solid #333; position: relative; }
         .img-card img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
     <div class="nav">
         <h2 class="logo">HEROVEE</h2>
-        <i class="fas fa-sign-out-alt" id="logoutBtn" style="color:#ff3c7b; cursor:pointer;"></i>
+        <i class="fas fa-sign-out-alt" id="logoutBtn" style="color:#ff3c7b; cursor:pointer; font-size: 20px;"></i>
     </div>
 
-    <div class="token-container">
-        <label style="font-size: 10px; color: #888;">GITHUB ACCESS TOKEN:</label>
-        <input type="password" id="githubToken" class="token-input" placeholder="Paste your Ghp_... token here">
+    <div class="token-box">
+        <label style="font-size: 11px; opacity: 0.7;">GITHUB ACCESS TOKEN (REQUIRED TO LOAD PHOTOS):</label>
+        <input type="password" id="githubToken" class="token-input" placeholder="Paste Ghp_... token and press enter">
     </div>
 
     <div id="pBarContainer"><div id="pBar"></div></div>
 
     <div class="upload-trigger" onclick="document.getElementById('fileInp').click()">
-        <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: #ff3c7b;"></i>
-        <p>TAP TO SECURE PHOTOS</p>
+        <i class="fas fa-cloud-upload-alt" style="font-size: 35px; color: #ff3c7b;"></i>
+        <p style="font-weight: 600; font-size: 13px; margin-top: 10px;">SECURE NEW PHOTO</p>
         <input type="file" id="fileInp" accept="image/*" multiple hidden>
     </div>
 
@@ -58,40 +56,59 @@
         const REPO = "Herovee1";
         let userEmailPath = "";
 
+        const tokenInput = document.getElementById('githubToken');
+
+        // ১. অটো-লোড টোকেন মেমোরি থেকে
+        const savedToken = localStorage.getItem('gh_token');
+        if(savedToken) tokenInput.value = savedToken;
+
         onAuthStateChanged(auth, user => {
             if (user) {
                 userEmailPath = user.email.replace(/[^a-zA-Z0-9]/g, "_");
-                // গ্যালারি দেখার সময় যদি টোকেন থাকে তবে লোড হবে
-                const savedToken = document.getElementById('githubToken').value;
-                if(savedToken) loadGallery(savedToken);
+                if(tokenInput.value) loadGallery(tokenInput.value);
             } else { window.location.href = "index.html"; }
         });
 
-        document.getElementById('logoutBtn').onclick = () => signOut(auth);
+        // টোকেন বক্সে কিছু লিখে এন্টার দিলে লোড হবে
+        tokenInput.onchange = () => {
+            localStorage.setItem('gh_token', tokenInput.value);
+            loadGallery(tokenInput.value);
+        };
 
-        // গ্যালারি লোড ফাংশন
+        document.getElementById('logoutBtn').onclick = () => {
+            localStorage.removeItem('gh_token');
+            signOut(auth);
+        };
+
+        // ২. গ্যালারি লোড ফাংশন (FIXED)
         async function loadGallery(token) {
+            const gal = document.getElementById('gallery');
+            if(!userEmailPath) return;
+            
             const url = `https://api.github.com/repos/${USER}/${REPO}/contents/vault/${userEmailPath}`;
-            const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
-            if (res.ok) {
-                const data = await res.json();
-                const gal = document.getElementById('gallery');
-                gal.innerHTML = "";
-                data.reverse().forEach(file => {
-                    if(file.type === "file") {
-                        gal.innerHTML += `<div class="img-card"><img src="${file.download_url}"></div>`;
-                    }
-                });
-            }
+            try {
+                const res = await fetch(url, { headers: { "Authorization": `token ${token}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    gal.innerHTML = "";
+                    data.reverse().forEach(file => {
+                        if(file.type === "file") {
+                            const div = document.createElement('div');
+                            div.className = "img-card";
+                            div.innerHTML = `<img src="${file.download_url}" loading="lazy">`;
+                            gal.appendChild(div);
+                        }
+                    });
+                } else {
+                    gal.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5;'>No photos found or invalid token.</p>";
+                }
+            } catch (err) { console.error(err); }
         }
 
-        // আপলোড লজিক
+        // ৩. আপলোড লজিক (FIXED PATH)
         document.getElementById('fileInp').onchange = async (e) => {
-            const token = document.getElementById('githubToken').value;
-            if(!token) {
-                alert("Please paste your GitHub Token first!");
-                return;
-            }
+            const token = tokenInput.value;
+            if(!token) { alert("Please paste your GitHub Token first!"); return; }
 
             const files = e.target.files;
             if(!files.length) return;
@@ -104,11 +121,12 @@
                 await new Promise(resolve => {
                     reader.onload = async () => {
                         const content = reader.result.split(',')[1];
+                        // এখানে পাথটি একদম সঠিক করা হয়েছে
                         const path = `vault/${userEmailPath}/${Date.now()}_img.png`;
-                        const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${path}`, {
+                        await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${path}`, {
                             method: "PUT",
                             headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-                            body: JSON.stringify({ message: "upload", content: content })
+                            body: JSON.stringify({ message: "vault_up", content: content })
                         });
                         resolve();
                     };
