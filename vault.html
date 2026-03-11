@@ -3,42 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEROVEE - Vault & Call</title>
+    <title>HEROVEE - Auto Link Call</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;600&display=swap');
-        body { background: #000; color: white; font-family: 'Inter', sans-serif; text-align: center; }
-        .header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
+        body { background: #000; color: white; font-family: 'Inter', sans-serif; text-align: center; margin: 0; }
+        .header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; background: #050505; }
         .container { padding: 40px 20px; }
-        .card { background: #111; border-radius: 30px; padding: 30px; border: 1px solid #45f3ff44; max-width: 400px; margin: auto; }
-        .id-text { font-family: 'Orbitron', sans-serif; font-size: 32px; color: #45f3ff; margin: 20px 0; }
-        input { width: 100%; padding: 15px; border-radius: 50px; border: 1px solid #333; background: #000; color: white; text-align: center; margin-top: 20px; }
-        .btn { width: 100%; padding: 15px; border-radius: 50px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
-        .btn-call { background: #00ff44; color: #000; }
-        .btn-dup { background: #ffee00; color: #000; margin-top: 30px; }
+        .card { background: #111; border-radius: 30px; padding: 30px; border: 1px solid #45f3ff44; max-width: 420px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .id-text { font-family: 'Orbitron', sans-serif; font-size: 32px; color: #45f3ff; margin: 15px 0; letter-spacing: 5px; }
+        .btn { width: 100%; padding: 18px; border-radius: 50px; border: none; font-weight: 800; margin-top: 15px; cursor: pointer; text-transform: uppercase; }
+        .btn-call { background: linear-gradient(90deg, #00ff44, #45f3ff); color: #000; }
+        .btn-share { background: #ffee00; color: #000; margin-top: 20px; font-size: 14px; }
         #video-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; display: none; z-index: 1000; }
+        .status { font-size: 12px; color: #ff3c7b; margin-top: 10px; opacity: 0.8; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h2 style="font-family: 'Orbitron'; color: #45f3ff;">HEROVEE</h2>
-        <button onclick="logout()" style="background: none; border: none; color: #ff3c7b; font-size: 20px;"><i class="fas fa-power-off"></i></button>
+        <h2 style="font-family: 'Orbitron'; color: #45f3ff; font-size: 20px;">HEROVEE</h2>
+        <button onclick="auth.signOut()" style="background: none; border: none; color: #ff3c7b; font-size: 20px;"><i class="fas fa-power-off"></i></button>
     </div>
 
-    <div class="container">
+    <div class="container" id="mainUI">
         <div class="card">
-            <p style="opacity: 0.5;">Your Unique ID</p>
+            <p style="opacity: 0.6; font-size: 12px; letter-spacing: 2px;">YOUR CALLING ID</p>
             <div class="id-text" id="myID">-----</div>
             
-            <input type="number" id="targetID" placeholder="Enter Friend's ID">
-            <button class="btn btn-call" id="startCall">START VIDEO CALL</button>
-        </div>
+            <p class="status" id="callStatus">Ready for Secure Call</p>
 
-        <div class="card" style="margin-top: 20px; border-color: #ffee0044;">
-            <h3><i class="fas fa-clone"></i> Duplicate Finder</h3>
-            <p style="font-size: 12px; opacity: 0.6; margin-top: 5px;">Scan and remove duplicate vault files</p>
-            <button class="btn btn-dup" onclick="scanDuplicates()">SCAN NOW</button>
+            <button class="btn btn-share" onclick="copyInviteLink()">
+                <i class="fas fa-link"></i> COPY INVITE LINK
+            </button>
+            
+            <p style="margin-top: 20px; font-size: 11px; opacity: 0.4;">OR CALL MANUALLY</p>
+            <input type="number" id="targetID" style="width:100%; padding:15px; border-radius:50px; background:#000; color:#fff; border:1px solid #333; text-align:center; margin-top:10px;" placeholder="Friend's ID">
+            <button class="btn btn-call" onclick="startCallManual()">START SESSION</button>
         </div>
     </div>
 
@@ -60,6 +61,9 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        const appID = 1064412250;
+        const serverSecret = "69886eaef48505340c59c2497ad0a679";
+
         let currentUserID = "";
         let currentUserName = "";
 
@@ -75,33 +79,46 @@
                     currentUserID = doc.data().callingID;
                 }
                 document.getElementById('myID').innerText = currentUserID;
+                
+                // অটো-জয়েন চেক: যদি ইউআরএল এ রুম আইডি থাকে
+                const urlParams = new URLSearchParams(window.location.search);
+                const autoRoomID = urlParams.get('room');
+                if (autoRoomID) {
+                    joinCall(autoRoomID);
+                }
             } else { window.location.href = "index.html"; }
         });
 
-        function logout() { auth.signOut(); }
+        // ১. ইনভাইট লিঙ্ক তৈরি ও কপি করা
+        function copyInviteLink() {
+            const inviteLink = window.location.origin + window.location.pathname + "?room=" + currentUserID;
+            navigator.clipboard.writeText(inviteLink).then(() => {
+                alert("Invite Link Copied! Send it to your friend.");
+            });
+        }
 
-        document.getElementById('startCall').onclick = function() {
+        // ২. ম্যানুয়াল কল
+        function startCallManual() {
             const targetID = document.getElementById('targetID').value;
-            if (!targetID) return alert("Enter ID");
-
-            const appID = 1064412250;
-            const serverSecret = "69886eaef48505340c59c2497ad0a679";
+            if (!targetID) return alert("Please enter an ID");
             const roomID = [currentUserID, targetID].sort().join("_");
-            
+            joinCall(roomID);
+        }
+
+        // ৩. মেইন কল জয়েন ফাংশন
+        function joinCall(roomID) {
+            document.getElementById('video-container').style.display = 'block';
+            document.getElementById('mainUI').style.display = 'none';
+
             const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, currentUserID, currentUserName);
             const zp = ZegoUIKitPrebuilt.create(kitToken);
 
-            document.getElementById('video-container').style.display = 'block';
             zp.joinRoom({
                 container: document.getElementById('video-container'),
                 scenario: { mode: ZegoUIKitPrebuilt.Scenario.OneONoneCall },
-                onLeaveRoom: () => { window.location.reload(); }
+                showScreenSharingButton: true,
+                onLeaveRoom: () => { window.location.href = window.location.origin + window.location.pathname; }
             });
-        };
-
-        // সিম্পল ডুপ্লিকেট ফাইন্ডার অ্যালগরিদম ডেমো
-        function scanDuplicates() {
-            alert("Scanning vault for duplicate hashes... Found 0 duplicates. Your vault is clean, Siyam Boss!");
         }
     </script>
 </body>
