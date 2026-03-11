@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEROVEE - Vault</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap');
+        body { background: #000; color: white; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 30px; letter-spacing: 5px; color: #45f3ff; margin-bottom: 20px; }
+        .welcome-card { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .btn-logout { margin-top: 20px; padding: 10px 25px; background: #ff3c7b; border: none; border-radius: 50px; color: white; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <h1 class="logo">HEROVEE VAULT</h1>
+    
+    <div class="welcome-card">
+        <h2>Welcome, User!</h2>
+        <p>Your secure vault is under construction.</p>
+        <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEl8t2m_HZ1oNOC49lmpiiM4-XhGzWRfE",
+            authDomain: "herovee.firebaseapp.com",
+            projectId: "herovee",
+            storageBucket: "herovee.firebasestorage.app",
+            messagingSenderId: "700112828047",
+            appId: "1:700112828047:web:988f0598b5341a29bba2fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.logout = () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            });
+        };
+    </script>
+</body>
+</html>
