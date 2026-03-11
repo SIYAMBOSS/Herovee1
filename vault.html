@@ -1,112 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEROVEE - Fast Upload</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap');
-        body { background: #0b0d11; color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 15px; text-align: center; }
-        
-        .header { margin: 30px 0; }
-        .logo { font-family: 'Orbitron', sans-serif; font-size: 28px; color: #45f3ff; letter-spacing: 3px; }
+<title>Photo Vault</title>
 
-        /* বড় আপলোড এরিয়া */
-        .upload-box { 
-            width: 100%; height: 300px; border: 2px dashed #45f3ff; border-radius: 25px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; background: rgba(69, 243, 255, 0.02); margin-bottom: 20px;
-        }
-        .upload-box i { font-size: 60px; color: #ff3c7b; margin-bottom: 15px; }
-        .upload-box p { font-size: 18px; font-weight: bold; }
+<style>
+body{
+font-family: Arial;
+background:#111;
+color:white;
+text-align:center;
+}
 
-        /* সিম্পল লোডিং বার */
-        #progress { 
-            display: none; width: 100%; background: #1a1d24; height: 35px; 
-            border-radius: 50px; overflow: hidden; position: relative; border: 1px solid #333;
-        }
-        #fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff3c7b, #45f3ff); transition: 0.3s; }
-        #percent { position: absolute; width: 100%; top: 8px; font-weight: 800; font-size: 14px; }
+h1{
+margin-top:20px;
+}
 
-        #gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 30px; }
-        .card { aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: #161a21; border: 1px solid #222; }
-        .card img { width: 100%; height: 100%; object-fit: cover; }
-    </style>
+input{
+margin:20px;
+}
+
+.gallery{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.gallery img{
+width:120px;
+height:120px;
+object-fit:cover;
+margin:10px;
+border-radius:10px;
+border:2px solid white;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="header"><h1 class="logo">HEROVEE</h1></div>
+<h1>🔐 My Photo Vault</h1>
 
-    <div id="progress">
-        <div id="fill"></div>
-        <div id="percent">0%</div>
-    </div>
+<input type="file" id="upload" accept="image/*">
 
-    <div class="upload-box" onclick="document.getElementById('file').click()">
-        <i class="fas fa-cloud-arrow-up"></i>
-        <p>TAP TO UPLOAD</p>
-        <input type="file" id="file" multiple hidden accept="image/*,video/*">
-    </div>
+<div class="gallery" id="gallery"></div>
 
-    <div id="gallery"></div>
+<script>
 
-    <script type="module">
-        const TOKEN = "Ghp_g9UB5eMe7TQWVv8iUNeVAEiQvy3kfS1qrlzi"; //
-        const USER = "SIYAMBOSS"; //
-        const REPO = "Herovee1"; //
+let gallery = document.getElementById("gallery");
+let upload = document.getElementById("upload");
 
-        document.getElementById('file').onchange = async (e) => {
-            const files = e.target.files;
-            if(!files.length) return;
+loadImages();
 
-            const pBar = document.getElementById('progress');
-            const fill = document.getElementById('fill');
-            const txt = document.getElementById('percent');
-            
-            pBar.style.display = 'block';
+upload.addEventListener("change",function(){
 
-            for(let i=0; i<files.length; i++){
-                const currentPct = Math.round(((i + 1) / files.length) * 100);
-                fill.style.width = currentPct + "%";
-                txt.innerText = `Uploading: ${currentPct}%`;
+let file = upload.files[0];
+let reader = new FileReader();
 
-                const reader = new FileReader();
-                reader.readAsDataURL(files[i]);
-                await new Promise(resolve => {
-                    reader.onload = async () => {
-                        const base64 = reader.result.split(',')[1];
-                        const name = Date.now() + "_" + files[i].name.replace(/\s/g, "_");
+reader.onload=function(){
 
-                        await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/vault/${name}`, {
-                            method: "PUT",
-                            headers: { "Authorization": `token ${TOKEN}` },
-                            body: JSON.stringify({ message: "up", content: base64 })
-                        });
-                        resolve();
-                    };
-                });
-            }
-            setTimeout(() => { pBar.style.display = 'none'; load(); }, 1000);
-        };
+let imgData = reader.result;
 
-        async function load() {
-            const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/vault`, {
-                headers: { "Authorization": `token ${TOKEN}` }
-            });
-            if(res.ok) {
-                const data = await res.json();
-                const gal = document.getElementById('gallery');
-                gal.innerHTML = "";
-                data.reverse().forEach(f => {
-                    const div = document.createElement('div');
-                    div.className = "card";
-                    div.innerHTML = `<img src="${f.download_url}">`;
-                    gal.appendChild(div);
-                });
-            }
-        }
-        load();
-    </script>
+let images = JSON.parse(localStorage.getItem("vaultImages")) || [];
+images.push(imgData);
+
+localStorage.setItem("vaultImages",JSON.stringify(images));
+
+displayImage(imgData);
+
+}
+
+reader.readAsDataURL(file);
+
+});
+
+function displayImage(src){
+
+let img = document.createElement("img");
+img.src = src;
+
+gallery.appendChild(img);
+
+}
+
+function loadImages(){
+
+let images = JSON.parse(localStorage.getItem("vaultImages")) || [];
+
+images.forEach(function(src){
+
+displayImage(src);
+
+});
+
+}
+
+</script>
+
 </body>
 </html>
