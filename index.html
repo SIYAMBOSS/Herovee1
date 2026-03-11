@@ -2,148 +2,101 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEROVEE - Video Call</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;600&display=swap');
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
-
-        /* --- Header --- */
-        .header { padding: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .logo-small { font-family: 'Orbitron', sans-serif; font-size: 20px; letter-spacing: 3px; color: #45f3ff; font-weight: 900; }
-        .logout-btn { color: #ff3c7b; font-size: 24px; cursor: pointer; transition: 0.3s; }
-
-        /* --- Main UI --- */
-        .container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
-        
-        .id-card { 
-            background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); 
-            border-radius: 30px; padding: 30px; width: 100%; max-width: 400px;
-            border: 1px solid rgba(69, 243, 255, 0.2); text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-
-        .user-name { font-size: 14px; opacity: 0.6; margin-bottom: 10px; }
-        .id-label { font-size: 12px; letter-spacing: 2px; color: #ffee00; text-transform: uppercase; }
-        .calling-id { font-size: 32px; font-weight: 900; color: #fff; margin: 15px 0; letter-spacing: 5px; text-shadow: 0 0 15px rgba(255,255,255,0.3); }
-
-        .input-call {
-            width: 100%; padding: 18px; background: rgba(0,0,0,0.3); 
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; 
-            color: white; outline: none; font-size: 16px; text-align: center; margin-top: 25px;
-        }
-
-        .call-btn {
-            width: 100%; padding: 18px; background: linear-gradient(90deg, #00ff44, #45f3ff);
-            border: none; border-radius: 50px; color: #000; font-weight: 800; 
-            cursor: pointer; font-size: 16px; margin-top: 20px; text-transform: uppercase;
-        }
-
-        #video-container { 
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-            background: #000; z-index: 1000; display: none;
-        }
-
-        /* --- Footer Info --- */
-        .footer-info { margin-top: 30px; font-size: 11px; opacity: 0.4; text-align: center; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HEROVEE - Ultra Pro Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="header">
-        <h1 class="logo-small">HEROVEE</h1>
-        <i class="fas fa-power-off logout-btn" id="logoutBtn"></i>
+    <div class="loader-container">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
     </div>
 
-    <div class="container">
-        <div class="id-card">
-            <p class="user-name" id="userName">Welcome...</p>
-            <p class="id-label">Your Unique ID</p>
-            <div class="calling-id" id="myID">-----</div>
-            
-            <input type="number" id="targetID" class="input-call" placeholder="Enter Friend's ID">
-            <button class="call-btn" id="startCall"><i class="fas fa-video"></i> Start Session</button>
+    <div class="card">
+        <h1 class="logo">HEROVEE</h1>
+
+        <div id="loginBox">
+            <div class="input-group">
+                <input type="email" id="logEmail" class="input-style" placeholder="Gmail Address">
+                <input type="password" id="logPass" class="input-style" placeholder="Password">
+            </div>
+            <button class="btn-action" id="logBtn">SIGN IN</button>
+            <div class="links-container">
+                <span class="link" onclick="showBox('resetBox')">Forget Password</span>
+                <span class="link" onclick="showBox('regBox')">Create Account</span>
+            </div>
         </div>
-        
-        <p class="footer-info">Secure Peer-to-Peer Encryption Active</p>
+
+        <div id="regBox" style="display: none;">
+            <div class="input-group">
+                <input type="text" id="regName" class="input-style" placeholder="Full Name">
+                <input type="email" id="regEmail" class="input-style" placeholder="Gmail Address">
+                <input type="password" id="regPass" class="input-style" placeholder="Password">
+            </div>
+            <button class="btn-action" id="regBtn">SIGN UP</button>
+            <div class="links-container">
+                <span class="link" onclick="showBox('loginBox')">Back to Login</span>
+            </div>
+        </div>
+
+        <div id="resetBox" style="display: none;">
+            <div class="input-group">
+                <input type="email" id="resEmail" class="input-style" placeholder="Your Gmail">
+            </div>
+            <button class="btn-action">RESET PASSWORD</button>
+            <div class="links-container">
+                <span class="link" onclick="showBox('loginBox')">Cancel</span>
+            </div>
+        </div>
     </div>
 
-    <div id="video-container"></div>
+    <div id="toast">Message</div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyAEl8t2m_HZ1oNOC49lmpiiM4-XhGzWRfE",
             authDomain: "herovee.firebaseapp.com",
             projectId: "herovee",
             appId: "1:700112828047:web:988f0598b5341a29bba2fa"
         };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
 
-        let currentUserID = "";
-        let currentUserName = "";
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-        // ১. জিমেইল অথেন্টিকেশন ও আইডি জেনারেশন
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUserName = user.displayName || user.email.split('@')[0];
-                document.getElementById('userName').innerText = "Logged as: " + user.email;
-
-                // Firestore-এ ইউনিক আইডি চেক করা
-                const userRef = db.collection("callingUsers").doc(user.uid);
-                const doc = await userRef.get();
-
-                if (!doc.exists) {
-                    // নতুন ৫ ডিজিটের আইডি তৈরি
-                    currentUserID = Math.floor(10000 + Math.random() * 90000).toString();
-                    await userRef.set({ name: currentUserName, email: user.email, callingID: currentUserID });
-                } else {
-                    currentUserID = doc.data().callingID;
-                }
-                document.getElementById('myID').innerText = currentUserID;
-            } else {
-                window.location.href = "index.html";
-            }
-        });
-
-        // ২. লগআউট
-        document.getElementById('logoutBtn').onclick = () => auth.signOut();
-
-        // ৩. জেগো ক্লাউড ভিডিও কল সেটআপ
-        document.getElementById('startCall').onclick = function() {
-            const targetID = document.getElementById('targetID').value;
-            if (!targetID || targetID.length < 5) return alert("Please enter a valid 5-digit ID");
-
-            const roomID = [currentUserID, targetID].sort().join("_");
-            
-            // সিয়াম বস্, আপনার ZegoCloud AppID এবং ServerSecret এখানে বসান
-            const appID = 123456789; // Replace with your AppID
-            const serverSecret = "your_server_secret"; // Replace with your ServerSecret
-
-            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, currentUserID, currentUserName);
-            const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-            document.getElementById('video-container').style.display = 'block';
-
-            zp.joinRoom({
-                container: document.getElementById('video-container'),
-                scenario: { mode: ZegoUIKitPrebuilt.Scenario.OneONoneCall },
-                showScreenSharingButton: true,
-                onLeaveRoom: () => {
-                    document.getElementById('video-container').style.display = 'none';
-                    window.location.reload();
-                }
-            });
+        window.showBox = (id) => {
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('regBox').style.display = 'none';
+            document.getElementById('resetBox').style.display = 'none';
+            document.getElementById(id).style.display = 'block';
         };
+
+        // Login Logic
+        document.getElementById('logBtn').onclick = () => {
+            signInWithEmailAndPassword(auth, document.getElementById('logEmail').value, document.getElementById('logPass').value)
+            .catch((err) => showToast("Login Failed!"));
+        };
+
+        // Register Logic
+        document.getElementById('regBtn').onclick = () => {
+            createUserWithEmailAndPassword(auth, document.getElementById('regEmail').value, document.getElementById('regPass').value)
+            .then(() => showToast("Account Created!"))
+            .catch((err) => showToast("Registration Error"));
+        };
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.classList.add('active');
+            setTimeout(() => t.classList.remove('active'), 3000);
+        }
+
+        onAuthStateChanged(auth, (u) => { if (u) window.location.href = "vault.html"; });
     </script>
 </body>
 </html>
