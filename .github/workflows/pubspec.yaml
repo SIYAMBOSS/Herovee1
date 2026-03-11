@@ -1,0 +1,25 @@
+name: herovee_app
+description: "HEROVEE Video Calling App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # জেগো ক্লাউড প্যাকেজ
+  zego_uikit_prebuilt_call: ^4.17.1
+  # ফায়ারবেস প্যাকেজ
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
