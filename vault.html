@@ -1,75 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Photo Vault</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEROVEE - Secure Vault</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #0b0d11; color: white; text-align: center; padding: 20px; }
 
-<style>
-body{
-background:#111;
-color:white;
-font-family:Arial;
-text-align:center;
-}
+        /* হেডার ও লগআউট */
+        .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .logo { font-family: 'Orbitron', sans-serif; color: #45f3ff; font-size: 22px; }
+        .logout-btn { background: #ff3c7b; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-.gallery img{
-width:120px;
-margin:10px;
-border-radius:10px;
-}
-</style>
+        /* প্রগ্রেস বার */
+        #pContainer { display: none; width: 100%; max-width: 400px; background: #222; height: 10px; border-radius: 10px; margin: 20px auto; overflow: hidden; border: 1px solid #333; }
+        #pBar { height: 100%; width: 0%; background: linear-gradient(90deg, #ff3c7b, #45f3ff); transition: 0.3s; }
 
+        /* আপলোড এরিয়া */
+        .upload-area { margin: 20px auto; width: 100%; max-width: 400px; padding: 40px 20px; border: 2px dashed #ff3c7b; border-radius: 20px; background: rgba(255, 60, 123, 0.05); cursor: pointer; }
+        .upload-area i { font-size: 40px; color: #ff3c7b; margin-bottom: 10px; }
+
+        /* গ্যালারি গ্রিড */
+        .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 30px; }
+        .gallery-item { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: #161a21; }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+    </style>
 </head>
-
 <body>
 
-<h2>My Vault</h2>
+    <div class="nav">
+        <div class="logo">HEROVEE</div>
+        <button class="logout-btn" id="logoutBtn">Sign Out</button>
+    </div>
 
-<input type="file" id="upload">
+    <div id="pContainer"><div id="pBar"></div></div>
 
-<div class="gallery" id="gallery"></div>
+    <div class="upload-area" onclick="document.getElementById('fileInp').click()">
+        <i class="fas fa-shield-alt"></i>
+        <p style="font-weight: 600;">SECURE UPLOAD</p>
+        <input type="file" id="fileInp" accept="image/*" multiple hidden>
+    </div>
 
-<script>
+    <div class="gallery" id="gallery"></div>
 
-const token = "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";
-const repo = "SIYAMBOSS/Herovee1";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-let email = localStorage.getItem("userEmail"); // login system থেকে আসবে
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEl8t2m_HZ1oNOC49lmpiiM4-XhGzWRfE",
+            authDomain: "herovee.firebaseapp.com",
+            projectId: "herovee",
+            storageBucket: "herovee.firebasestorage.app",
+            messagingSenderId: "700112828047",
+            appId: "1:700112828047:web:988f0598b5341a29bba2fa"
+        };
 
-document.getElementById("upload").addEventListener("change", uploadImage);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-function uploadImage(){
+        // গিটহাব সেটিংস
+        const TOKEN = "Ghp_g9UB5eMe7TQWVv8iUNeVAEiQvy3kfS1qrlzi"; 
+        const USER = "SIYAMBOSS";
+        const REPO = "Herovee1";
+        const BASE_FOLDER = "vault";
 
-let file = document.getElementById("upload").files[0];
+        let userEmailPath = "";
 
-let reader = new FileReader();
+        // লগইন স্ট্যাটাস চেক
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                userEmailPath = user.email.replace(/[^a-zA-Z0-9]/g, "_");
+                loadVault();
+            } else {
+                window.location.href = "index.html"; // লগইন না থাকলে হোমে পাঠিয়ে দেবে
+            }
+        });
 
-reader.onload = async function(){
+        // লগআউট ফাংশন
+        document.getElementById('logoutBtn').onclick = () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            });
+        };
 
-let base64 = reader.result.split(",")[1];
+        async function loadVault() {
+            if (!userEmailPath) return;
+            const fullPath = `${BASE_FOLDER}/${userEmailPath}`;
+            
+            try {
+                const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${fullPath}`, {
+                    headers: { "Authorization": `token ${TOKEN}` }
+                });
 
-let path = "users/"+email+"/"+Date.now()+".png";
+                if (res.ok) {
+                    const files = await res.json();
+                    const gal = document.getElementById("gallery");
+                    gal.innerHTML = "";
+                    files.reverse().forEach(file => {
+                        if (file.type === "file") {
+                            const div = document.createElement("div");
+                            div.className = "gallery-item";
+                            div.innerHTML = `<img src="${file.download_url}">`;
+                            gal.appendChild(div);
+                        }
+                    });
+                }
+            } catch (err) { console.error("Load Error:", err); }
+        }
 
-await fetch("https://api.github.com/repos/"+repo+"/contents/"+path,{
-method:"PUT",
-headers:{
-"Authorization":"token "+token,
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-message:"upload photo",
-content:base64
-})
-});
+        document.getElementById('fileInp').onchange = async (e) => {
+            const files = e.target.files;
+            if (files.length === 0 || !userEmailPath) return;
 
-alert("Uploaded");
+            document.getElementById('pContainer').style.display = 'block';
+            const pBar = document.getElementById('pBar');
 
-}
+            for (let i = 0; i < files.length; i++) {
+                pBar.style.width = ((i + 1) / files.length * 100) + "%";
+                
+                const base64Data = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(files[i]);
+                });
 
-reader.readAsDataURL(file);
+                const fileName = `${BASE_FOLDER}/${userEmailPath}/${Date.now()}_${files[i].name.replace(/\s/g, "_")}`;
 
-}
+                await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${fileName}`, {
+                    method: "PUT",
+                    headers: { 
+                        "Authorization": `token ${TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ 
+                        message: `upload by ${userEmailPath}`, 
+                        content: base64Data 
+                    })
+                });
+            }
 
-</script>
-
+            document.getElementById('pContainer').style.display = 'none';
+            loadVault();
+        };
+    </script>
 </body>
 </html>
