@@ -3,69 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HEROVEE - Advanced System</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>HEROVEE - Ultra Pro</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;600&display=swap');
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; overflow: hidden; }
 
-        /* --- Animated Multiple Rings --- */
-        .loader-container { position: absolute; width: 500px; height: 500px; display: flex; align-items: center; justify-content: center; z-index: 1; }
-        .circle { position: absolute; border: 2px solid transparent; border-radius: 50%; animation: rotate linear infinite; }
+        /* --- Extra Bold Animated Rings --- */
+        .loader-container { position: absolute; width: 520px; height: 520px; display: flex; align-items: center; justify-content: center; z-index: 1; }
+        .circle { position: absolute; border: 6px solid transparent; border-radius: 50%; animation: rotate linear infinite; }
         
-        /* ৫টি আলাদা রঙের রিং */
-        .circle:nth-child(1) { width: 100%; height: 100%; border-top-color: #45f3ff; animation-duration: 4s; filter: drop-shadow(0 0 12px #45f3ff); }
-        .circle:nth-child(2) { width: 92%; height: 92%; border-bottom-color: #ff3c7b; animation-duration: 3s; animation-direction: reverse; filter: drop-shadow(0 0 12px #ff3c7b); }
-        .circle:nth-child(3) { width: 84%; height: 84%; border-left-color: #ffee00; animation-duration: 5s; filter: drop-shadow(0 0 12px #ffee00); }
-        .circle:nth-child(4) { width: 76%; height: 76%; border-right-color: #00ff44; animation-duration: 2.5s; animation-direction: reverse; filter: drop-shadow(0 0 12px #00ff44); }
-        .circle:nth-child(5) { width: 68%; height: 68%; border-top-color: #7d45ff; animation-duration: 6s; filter: drop-shadow(0 0 12px #7d45ff); }
+        /* ৫টি বোল্ড রিং */
+        .circle:nth-child(1) { width: 100%; height: 100%; border-top-color: #45f3ff; animation-duration: 4s; filter: drop-shadow(0 0 15px #45f3ff); }
+        .circle:nth-child(2) { width: 88%; height: 88%; border-bottom-color: #ff3c7b; animation-duration: 3s; animation-direction: reverse; filter: drop-shadow(0 0 15px #ff3c7b); }
+        .circle:nth-child(3) { width: 76%; height: 76%; border-left-color: #ffee00; animation-duration: 5s; filter: drop-shadow(0 0 15px #ffee00); }
+        .circle:nth-child(4) { width: 64%; height: 64%; border-right-color: #00ff44; animation-duration: 2.5s; animation-direction: reverse; filter: drop-shadow(0 0 15px #00ff44); }
+        .circle:nth-child(5) { width: 52%; height: 52%; border-top-color: #7d45ff; animation-duration: 6s; filter: drop-shadow(0 0 15px #7d45ff); }
 
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         /* --- UI Card --- */
         .card {
             position: relative; width: 92%; max-width: 380px;
-            background: rgba(10, 10, 10, 0.94); backdrop-filter: blur(25px);
+            background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(30px);
             border-radius: 40px; padding: 50px 25px; z-index: 10;
-            border: 1px solid rgba(255, 255, 255, 0.08); text-align: center;
-            box-shadow: 0 0 50px rgba(0,0,0,1);
+            border: 1px solid rgba(255, 255, 255, 0.1); text-align: center;
         }
 
-        /* --- HEROVEE Gradient Logo --- */
+        /* --- HEROVEE Color Changing Logo --- */
         .logo { 
             font-family: 'Orbitron', sans-serif; 
-            font-size: 32px; 
-            letter-spacing: 6px; 
+            font-size: 34px; 
+            letter-spacing: 7px; 
             margin-bottom: 35px;
             font-weight: 900;
-            background: linear-gradient(90deg, #ff3c7b, #ffed00); /* আপনার বাটনের গ্রাডিয়েন্ট */
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 10px rgba(255, 60, 123, 0.3));
+            /* এনিমেশন লজিক: রিংয়ের কালারগুলোর সাথে মিল রেখে */
+            animation: colorShift 8s infinite linear;
+        }
+
+        @keyframes colorShift {
+            0% { color: #45f3ff; text-shadow: 0 0 20px #45f3ff; }
+            25% { color: #ff3c7b; text-shadow: 0 0 20px #ff3c7b; }
+            50% { color: #ffee00; text-shadow: 0 0 20px #ffee00; }
+            75% { color: #00ff44; text-shadow: 0 0 20px #00ff44; }
+            100% { color: #45f3ff; text-shadow: 0 0 20px #45f3ff; }
         }
 
         /* --- Inputs --- */
-        .input-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .input-group { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
         .input-style { 
-            width: 100%; padding: 16px 22px; background: rgba(255,255,255,0.05); 
+            width: 100%; padding: 18px 24px; background: rgba(255,255,255,0.05); 
             border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; 
-            color: white; outline: none; font-size: 14px; 
+            color: white; outline: none; font-size: 14px; transition: 0.3s;
         }
-        .input-style:focus { border-color: #45f3ff; }
-        select.input-style { appearance: none; color: #999; }
+        .input-style:focus { border-color: #45f3ff; background: rgba(255,255,255,0.1); }
 
-        /* --- Gradient Button --- */
+        /* --- Button --- */
         .btn-action {
             width: 100%; padding: 18px; background: linear-gradient(90deg, #ff3c7b, #ffed00);
             border: none; border-radius: 50px; color: #000; font-weight: 800; 
-            cursor: pointer; font-size: 15px; margin-top: 10px;
+            cursor: pointer; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;
         }
 
         .links-container { display: flex; justify-content: space-between; margin-top: 25px; padding: 0 15px; }
-        .link { color: rgba(255,255,255,0.6); cursor: pointer; font-size: 12px; }
-        #toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #ff3c7b; color: white; padding: 12px 30px; border-radius: 50px; transition: 0.5s; z-index: 100; font-size: 13px; }
+        .link { color: rgba(255,255,255,0.5); cursor: pointer; font-size: 12px; text-decoration: none; }
+        .link:hover { color: #fff; }
+
+        #toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #ff3c7b; color: white; padding: 12px 30px; border-radius: 50px; transition: 0.5s; z-index: 100; }
         #toast.active { bottom: 40px; }
     </style>
 </head>
@@ -74,7 +79,7 @@
     <div class="loader-container">
         <div class="circle"></div>
         <div class="circle"></div>
-        <div class="circle ="></div>
+        <div class="circle"></div>
         <div class="circle"></div>
         <div class="circle"></div>
     </div>
@@ -90,38 +95,31 @@
             <button class="btn-action" id="logBtn">SIGN IN</button>
             <div class="links-container">
                 <span class="link" onclick="showBox('resetBox')">Forget Password</span>
-                <span class="link" onclick="showBox('regBox')">Signup</span>
+                <span class="link" onclick="showBox('regBox')">Create Account</span>
             </div>
         </div>
 
         <div id="regBox" style="display: none;">
             <div class="input-group">
                 <input type="text" id="regName" class="input-style" placeholder="Full Name">
-                <select id="regCountry" class="input-style">
-                    <option value="" disabled selected>Country</option>
-                    <option value="Bangladesh">Bangladesh</option>
-                    <option value="India">India</option>
-                    <option value="Pakistan">Pakistan</option>
-                </select>
                 <input type="email" id="regEmail" class="input-style" placeholder="Gmail Address">
                 <input type="password" id="regPass" class="input-style" placeholder="Password">
-                <input type="password" id="regConfirm" class="input-style" placeholder="Confirm Password">
             </div>
-            <button class="btn-action" id="regBtn">CREATE ACCOUNT</button>
+            <button class="btn-action" id="regBtn">SIGN UP</button>
             <div class="links-container">
                 <span></span>
-                <span class="link" onclick="showBox('loginBox')">Back to Sign in</span>
+                <span class="link" onclick="showBox('loginBox')">Back to Login</span>
             </div>
         </div>
 
         <div id="resetBox" style="display: none;">
             <div class="input-group">
-                <input type="email" id="resetEmail" class="input-style" placeholder="Registered Gmail">
+                <input type="email" id="resEmail" class="input-style" placeholder="Your Gmail">
             </div>
-            <button class="btn-action" id="resetBtn">SEND LINK</button>
+            <button class="btn-action">RESET PASSWORD</button>
             <div class="links-container">
                 <span></span>
-                <span class="link" onclick="showBox('loginBox')">Back</span>
+                <span class="link" onclick="showBox('loginBox')">Cancel</span>
             </div>
         </div>
     </div>
@@ -130,7 +128,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAEl8t2m_HZ1oNOC49lmpiiM4-XhGzWRfE",
@@ -144,12 +142,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        window.showToast = (m) => {
-            const t = document.getElementById('toast');
-            t.innerText = m; t.classList.add('active');
-            setTimeout(() => t.classList.remove('active'), 3000);
-        };
-
         window.showBox = (id) => {
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('regBox').style.display = 'none';
@@ -159,12 +151,11 @@
 
         document.getElementById('logBtn').onclick = () => {
             signInWithEmailAndPassword(auth, document.getElementById('logEmail').value, document.getElementById('logPass').value)
-            .catch(() => showToast("Failed!"));
-        };
-
-        document.getElementById('regBtn').onclick = () => {
-            createUserWithEmailAndPassword(auth, document.getElementById('regEmail').value, document.getElementById('regPass').value)
-            .catch(() => showToast("Error!"));
+            .catch(() => {
+                const t = document.getElementById('toast');
+                t.innerText = "Auth Failed!"; t.classList.add('active');
+                setTimeout(() => t.classList.remove('active'), 3000);
+            });
         };
 
         onAuthStateChanged(auth, (u) => { if (u) window.location.href = "vault.html"; });
