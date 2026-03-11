@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HEROVEE - Access System</title>
+    <title>HEROVEE - Advanced System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap');
@@ -11,48 +11,60 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; overflow: hidden; }
 
-        /* --- Rotating Neon Circles --- */
-        .loader-container { position: absolute; width: 450px; height: 450px; display: flex; align-items: center; justify-content: center; z-index: 1; }
-        .circle { position: absolute; border: 3px solid transparent; border-radius: 50%; animation: rotate linear infinite; }
-        .circle:nth-child(1) { width: 100%; height: 100%; border-top-color: #45f3ff; animation-duration: 3s; filter: drop-shadow(0 0 10px #45f3ff); }
-        .circle:nth-child(2) { width: 90%; height: 90%; border-bottom-color: #ff3c7b; animation-duration: 2s; animation-direction: reverse; filter: drop-shadow(0 0 10px #ff3c7b); }
-        .circle:nth-child(3) { width: 80%; height: 80%; border-left-color: #ffee00; animation-duration: 4s; filter: drop-shadow(0 0 10px #ffee00); }
+        /* --- Animated Multiple Rings --- */
+        .loader-container { position: absolute; width: 500px; height: 500px; display: flex; align-items: center; justify-content: center; z-index: 1; }
+        .circle { position: absolute; border: 2px solid transparent; border-radius: 50%; animation: rotate linear infinite; }
+        
+        /* ৫টি আলাদা রঙের রিং */
+        .circle:nth-child(1) { width: 100%; height: 100%; border-top-color: #45f3ff; animation-duration: 4s; filter: drop-shadow(0 0 12px #45f3ff); }
+        .circle:nth-child(2) { width: 92%; height: 92%; border-bottom-color: #ff3c7b; animation-duration: 3s; animation-direction: reverse; filter: drop-shadow(0 0 12px #ff3c7b); }
+        .circle:nth-child(3) { width: 84%; height: 84%; border-left-color: #ffee00; animation-duration: 5s; filter: drop-shadow(0 0 12px #ffee00); }
+        .circle:nth-child(4) { width: 76%; height: 76%; border-right-color: #00ff44; animation-duration: 2.5s; animation-direction: reverse; filter: drop-shadow(0 0 12px #00ff44); }
+        .circle:nth-child(5) { width: 68%; height: 68%; border-top-color: #7d45ff; animation-duration: 6s; filter: drop-shadow(0 0 12px #7d45ff); }
+
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         /* --- UI Card --- */
         .card {
             position: relative; width: 92%; max-width: 380px;
-            background: rgba(10, 10, 10, 0.92); backdrop-filter: blur(20px);
+            background: rgba(10, 10, 10, 0.94); backdrop-filter: blur(25px);
             border-radius: 40px; padding: 50px 25px; z-index: 10;
             border: 1px solid rgba(255, 255, 255, 0.08); text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
         }
 
-        .logo { font-family: 'Orbitron', sans-serif; color: white; font-size: 30px; letter-spacing: 6px; margin-bottom: 35px; text-shadow: 0 0 15px rgba(69, 243, 255, 0.4); }
+        /* --- HEROVEE Gradient Logo --- */
+        .logo { 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 32px; 
+            letter-spacing: 6px; 
+            margin-bottom: 35px;
+            font-weight: 900;
+            background: linear-gradient(90deg, #ff3c7b, #ffed00); /* আপনার বাটনের গ্রাডিয়েন্ট */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(255, 60, 123, 0.3));
+        }
 
         /* --- Inputs --- */
         .input-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
         .input-style { 
             width: 100%; padding: 16px 22px; background: rgba(255,255,255,0.05); 
             border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; 
-            color: white; outline: none; font-size: 14px; transition: 0.3s; 
+            color: white; outline: none; font-size: 14px; 
         }
-        .input-style:focus { border-color: #45f3ff; background: rgba(255,255,255,0.08); }
-        select.input-style { appearance: none; color: #999; cursor: pointer; }
-        select.input-style option { background: #111; color: white; }
+        .input-style:focus { border-color: #45f3ff; }
+        select.input-style { appearance: none; color: #999; }
 
-        /* --- Primary Button --- */
+        /* --- Gradient Button --- */
         .btn-action {
             width: 100%; padding: 18px; background: linear-gradient(90deg, #ff3c7b, #ffed00);
             border: none; border-radius: 50px; color: #000; font-weight: 800; 
-            cursor: pointer; font-size: 15px; margin-top: 10px; transition: 0.3s;
+            cursor: pointer; font-size: 15px; margin-top: 10px;
         }
-        .btn-action:hover { opacity: 0.9; transform: scale(0.98); }
 
-        /* --- Links --- */
         .links-container { display: flex; justify-content: space-between; margin-top: 25px; padding: 0 15px; }
-        .link { color: rgba(255,255,255,0.6); cursor: pointer; font-size: 12px; transition: 0.3s; }
-        .link:hover { color: #45f3ff; }
-
+        .link { color: rgba(255,255,255,0.6); cursor: pointer; font-size: 12px; }
         #toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #ff3c7b; color: white; padding: 12px 30px; border-radius: 50px; transition: 0.5s; z-index: 100; font-size: 13px; }
         #toast.active { bottom: 40px; }
     </style>
@@ -61,6 +73,8 @@
 
     <div class="loader-container">
         <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle ="></div>
         <div class="circle"></div>
         <div class="circle"></div>
     </div>
@@ -76,7 +90,7 @@
             <button class="btn-action" id="logBtn">SIGN IN</button>
             <div class="links-container">
                 <span class="link" onclick="showBox('resetBox')">Forget Password</span>
-                <span class="link" onclick="showBox('regBox')">Create Account</span>
+                <span class="link" onclick="showBox('regBox')">Signup</span>
             </div>
         </div>
 
@@ -84,32 +98,10 @@
             <div class="input-group">
                 <input type="text" id="regName" class="input-style" placeholder="Full Name">
                 <select id="regCountry" class="input-style">
-                    <option value="" disabled selected>Select Country</option>
+                    <option value="" disabled selected>Country</option>
                     <option value="Bangladesh">Bangladesh</option>
                     <option value="India">India</option>
                     <option value="Pakistan">Pakistan</option>
-                    <option value="Sri Lanka">Sri Lanka</option>
-                    <option value="Nepal">Nepal</option>
-                    <option value="Malaysia">Malaysia</option>
-                    <option value="Singapore">Singapore</option>
-                    <option value="Japan">Japan</option>
-                    <option value="South Korea">South Korea</option>
-                    <option value="Thailand">Thailand</option>
-                    <option value="Vietnam">Vietnam</option>
-                    <option value="Indonesia">Indonesia</option>
-                    <option value="Philippines">Philippines</option>
-                    <option value="Saudi Arabia">Saudi Arabia</option>
-                    <option value="UAE">UAE</option>
-                    <option value="Qatar">Qatar</option>
-                    <option value="Kuwait">Kuwait</option>
-                    <option value="Oman">Oman</option>
-                    <option value="Bahrain">Bahrain</option>
-                    <option value="Turkey">Turkey</option>
-                    <option value="Maldives">Maldives</option>
-                    <option value="Bhutan">Bhutan</option>
-                    <option value="Jordan">Jordan</option>
-                    <option value="Iraq">Iraq</option>
-                    <option value="Lebanon">Lebanon</option>
                 </select>
                 <input type="email" id="regEmail" class="input-style" placeholder="Gmail Address">
                 <input type="password" id="regPass" class="input-style" placeholder="Password">
@@ -126,10 +118,10 @@
             <div class="input-group">
                 <input type="email" id="resetEmail" class="input-style" placeholder="Registered Gmail">
             </div>
-            <button class="btn-action" id="resetBtn">SEND RESET LINK</button>
+            <button class="btn-action" id="resetBtn">SEND LINK</button>
             <div class="links-container">
                 <span></span>
-                <span class="link" onclick="showBox('loginBox')">Back to Login</span>
+                <span class="link" onclick="showBox('loginBox')">Back</span>
             </div>
         </div>
     </div>
@@ -152,7 +144,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        const showToast = (m) => {
+        window.showToast = (m) => {
             const t = document.getElementById('toast');
             t.innerText = m; t.classList.add('active');
             setTimeout(() => t.classList.remove('active'), 3000);
@@ -165,34 +157,17 @@
             document.getElementById(id).style.display = 'block';
         };
 
-        // Sign In
         document.getElementById('logBtn').onclick = () => {
-            const e = document.getElementById('logEmail').value;
-            const p = document.getElementById('logPass').value;
-            if(!e || !p) return showToast("Fill all fields!");
-            signInWithEmailAndPassword(auth, e, p).catch(() => showToast("Login Failed!"));
+            signInWithEmailAndPassword(auth, document.getElementById('logEmail').value, document.getElementById('logPass').value)
+            .catch(() => showToast("Failed!"));
         };
 
-        // Sign Up
         document.getElementById('regBtn').onclick = () => {
-            const e = document.getElementById('regEmail').value;
-            const p = document.getElementById('regPass').value;
-            const cp = document.getElementById('regConfirm').value;
-            if(p !== cp) return showToast("Passwords mismatch!");
-            createUserWithEmailAndPassword(auth, e, p).then(() => showToast("Account Created!")).catch(() => showToast("Error in Sign up!"));
+            createUserWithEmailAndPassword(auth, document.getElementById('regEmail').value, document.getElementById('regPass').value)
+            .catch(() => showToast("Error!"));
         };
 
-        // Reset
-        document.getElementById('resetBtn').onclick = () => {
-            const e = document.getElementById('resetEmail').value;
-            if(!e) return showToast("Enter Gmail!");
-            sendPasswordResetEmail(auth, e).then(() => showToast("Reset Link Sent!")).catch(() => showToast("User not found!"));
-        };
-
-        // Auth Redirect
-        onAuthStateChanged(auth, (u) => {
-            if (u) setTimeout(() => window.location.href = "vault.html", 1000);
-        });
+        onAuthStateChanged(auth, (u) => { if (u) window.location.href = "vault.html"; });
     </script>
 </body>
 </html>
