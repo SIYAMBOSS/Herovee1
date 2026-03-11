@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HEROVEE - Vault System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: #050505; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; overflow: hidden; }
+
+        .glow-bg {
+            position: absolute; width: 400px; height: 400px;
+            background: linear-gradient(135deg, #45f3ff, #ff3c7b);
+            filter: blur(120px); border-radius: 50%; opacity: 0.25; z-index: 1;
+        }
+
+        .card {
+            position: relative; width: 90%; max-width: 380px;
+            background: rgba(15, 15, 15, 0.98); border-radius: 40px;
+            padding: 50px 30px; z-index: 10; border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.9);
+        }
+
+        .logo { font-family: 'Orbitron', sans-serif; color: white; font-size: 32px; letter-spacing: 6px; margin-bottom: 35px; text-shadow: 0 0 15px rgba(69, 243, 255, 0.4); }
+
+        .input-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .input-style { width: 100%; padding: 16px 20px; background: #1a1a1a; border: 1px solid #222; border-radius: 14px; color: white; outline: none; font-size: 14px; transition: 0.3s; }
+        .input-style:focus { border-color: #45f3ff; }
+
+        .btn-primary {
+            width: 100%; padding: 18px; background: linear-gradient(90deg, #45f3ff 0%, #ff3c7b 100%);
+            border: none; border-radius: 14px; color: white; font-weight: 700; cursor: pointer; font-size: 15px; margin-top: 10px;
+        }
+
+        .footer-text { margin-top: 25px; color: #666; font-size: 13px; }
+        .link { color: #45f3ff; cursor: pointer; font-weight: 600; }
+        .forgot-link { display: block; margin-top: 15px; font-size: 12px; color: #45f3ff; opacity: 0.8; }
+
+        #toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #ff3c7b; color: white; padding: 12px 30px; border-radius: 50px; transition: 0.5s; z-index: 100; font-size: 13px; }
+        #toast.active { bottom: 40px; }
+    </style>
+</head>
+<body>
+
+    <div class="glow-bg"></div>
+
+    <div class="card">
+        <h1 class="logo">HEROVEE</h1>
+
+        <div id="loginBox">
+            <div class="input-group">
+                <input type="email" id="logEmail" class="input-style" placeholder="Gmail Address">
+                <input type="password" id="logPass" class="input-style" placeholder="Password">
+            </div>
+            <button class="btn-primary" id="logBtn">SIGN IN</button>
+            <p class="footer-text">New here? <span class="link" onclick="toggleView('reg')">Create Account</span></p>
+            <span class="link forgot-link" onclick="resetPass()">Forgot Password?</span>
+        </div>
+
+        <div id="regBox" style="display: none;">
+            <div class="input-group">
+                <input type="text" id="regName" class="input-style" placeholder="Full Name">
+                <select id="regCountry" class="input-style">
+                    <option value="" disabled selected>Select Country</option>
+                    <option value="Bangladesh">Bangladesh</option>
+                    <option value="India">India</option>
+                    <option value="Pakistan">Pakistan</option>
+                    <option value="Sri Lanka">Sri Lanka</option>
+                    <option value="Nepal">Nepal</option>
+                    <option value="Malaysia">Malaysia</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Japan">Japan</option>
+                    <option value="South Korea">South Korea</option>
+                    <option value="Thailand">Thailand</option>
+                    <option value="Vietnam">Vietnam</option>
+                    <option value="Indonesia">Indonesia</option>
+                    <option value="Philippines">Philippines</option>
+                    <option value="Saudi Arabia">Saudi Arabia</option>
+                    <option value="UAE">UAE</option>
+                    <option value="Qatar">Qatar</option>
+                    <option value="Kuwait">Kuwait</option>
+                    <option value="Oman">Oman</option>
+                    <option value="Bahrain">Bahrain</option>
+                    <option value="Turkey">Turkey</option>
+                    <option value="Maldives">Maldives</option>
+                    <option value="Bhutan">Bhutan</option>
+                    <option value="China">China</option>
+                    <option value="Brunei">Brunei</option>
+                    <option value="Cambodia">Cambodia</option>
+                </select>
+                <input type="email" id="regEmail" class="input-style" placeholder="Gmail Address">
+                <input type="password" id="regPass" class="input-style" placeholder="Password">
+                <input type="password" id="regConfirm" class="input-style" placeholder="Confirm Password">
+            </div>
+            <button class="btn-primary" id="regBtn">CREATE ACCOUNT</button>
+            <p class="footer-text">Already have? <span class="link" onclick="toggleView('log')">Sign In</span></p>
+        </div>
+    </div>
+
+    <div id="toast">Message</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEl8t2m_HZ1oNOC49lmpiiM4-XhGzWRfE",
+            authDomain: "herovee.firebaseapp.com",
+            projectId: "herovee",
+            storageBucket: "herovee.firebasestorage.app",
+            messagingSenderId: "700112828047",
+            appId: "1:700112828047:web:988f0598b5341a29bba2fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const showToast = (m) => {
+            const t = document.getElementById('toast');
+            t.innerText = m; t.classList.add('active');
+            setTimeout(() => t.classList.remove('active'), 3000);
+        };
+
+        window.toggleView = (type) => {
+            document.getElementById('loginBox').style.display = type === 'log' ? 'block' : 'none';
+            document.getElementById('regBox').style.display = type === 'reg' ? 'block' : 'none';
+        };
+
+        window.resetPass = () => {
+            const e = document.getElementById('logEmail').value;
+            if(!e) return showToast("Enter email first!");
+            sendPasswordResetEmail(auth, e).then(() => showToast("Check Gmail for link!")).catch(err => showToast("Error!"));
+        };
+
+        document.getElementById('logBtn').onclick = () => {
+            const e = document.getElementById('logEmail').value;
+            const p = document.getElementById('logPass').value;
+            signInWithEmailAndPassword(auth, e, p).catch(() => showToast("Login Failed!"));
+        };
+
+        document.getElementById('regBtn').onclick = () => {
+            const e = document.getElementById('regEmail').value;
+            const p = document.getElementById('regPass').value;
+            const cp = document.getElementById('regConfirm').value;
+            if(p !== cp) return showToast("Passwords mismatch!");
+            createUserWithEmailAndPassword(auth, e, p).catch(err => showToast("Sign up error!"));
+        };
+
+        onAuthStateChanged(auth, (u) => {
+            if (u) {
+                // Herovee1 রিপোজিটরিতে আপনার vault.html ফাইলটি থাকতে হবে
+                setTimeout(() => window.location.href = "vault.html", 1000);
+            }
+        });
+    </script>
+</body>
+</html>
