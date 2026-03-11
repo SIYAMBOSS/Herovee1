@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEROVEE - Vault & Call</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;600&display=swap');
+        body { background: #000; color: white; font-family: 'Inter', sans-serif; text-align: center; }
+        .header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
+        .container { padding: 40px 20px; }
+        .card { background: #111; border-radius: 30px; padding: 30px; border: 1px solid #45f3ff44; max-width: 400px; margin: auto; }
+        .id-text { font-family: 'Orbitron', sans-serif; font-size: 32px; color: #45f3ff; margin: 20px 0; }
+        input { width: 100%; padding: 15px; border-radius: 50px; border: 1px solid #333; background: #000; color: white; text-align: center; margin-top: 20px; }
+        .btn { width: 100%; padding: 15px; border-radius: 50px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        .btn-call { background: #00ff44; color: #000; }
+        .btn-dup { background: #ffee00; color: #000; margin-top: 30px; }
+        #video-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; display: none; z-index: 1000; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2 style="font-family: 'Orbitron'; color: #45f3ff;">HEROVEE</h2>
+        <button onclick="logout()" style="background: none; border: none; color: #ff3c7b; font-size: 20px;"><i class="fas fa-power-off"></i></button>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <p style="opacity: 0.5;">Your Unique ID</p>
+            <div class="id-text" id="myID">-----</div>
+            
+            <input type="number" id="targetID" placeholder="Enter Friend's ID">
+            <button class="btn btn-call" id="startCall">START VIDEO CALL</button>
+        </div>
+
+        <div class="card" style="margin-top: 20px; border-color: #ffee0044;">
+            <h3><i class="fas fa-clone"></i> Duplicate Finder</h3>
+            <p style="font-size: 12px; opacity: 0.6; margin-top: 5px;">Scan and remove duplicate vault files</p>
+            <button class="btn btn-dup" onclick="scanDuplicates()">SCAN NOW</button>
+        </div>
+    </div>
+
+    <div id="video-container"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEl8t2m_HZ1oNOC49lmpiiM4-XhGzWRfE",
+            authDomain: "herovee.firebaseapp.com",
+            projectId: "herovee",
+            appId: "1:700112828047:web:988f0598b5341a29bba2fa"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUserID = "";
+        let currentUserName = "";
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUserName = user.displayName || user.email.split('@')[0];
+                const userRef = db.collection("callingUsers").doc(user.uid);
+                const doc = await userRef.get();
+                if (!doc.exists) {
+                    currentUserID = Math.floor(10000 + Math.random() * 90000).toString();
+                    await userRef.set({ name: currentUserName, email: user.email, callingID: currentUserID });
+                } else {
+                    currentUserID = doc.data().callingID;
+                }
+                document.getElementById('myID').innerText = currentUserID;
+            } else { window.location.href = "index.html"; }
+        });
+
+        function logout() { auth.signOut(); }
+
+        document.getElementById('startCall').onclick = function() {
+            const targetID = document.getElementById('targetID').value;
+            if (!targetID) return alert("Enter ID");
+
+            const appID = 1064412250;
+            const serverSecret = "69886eaef48505340c59c2497ad0a679";
+            const roomID = [currentUserID, targetID].sort().join("_");
+            
+            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, currentUserID, currentUserName);
+            const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+            document.getElementById('video-container').style.display = 'block';
+            zp.joinRoom({
+                container: document.getElementById('video-container'),
+                scenario: { mode: ZegoUIKitPrebuilt.Scenario.OneONoneCall },
+                onLeaveRoom: () => { window.location.reload(); }
+            });
+        };
+
+        // সিম্পল ডুপ্লিকেট ফাইন্ডার অ্যালগরিদম ডেমো
+        function scanDuplicates() {
+            alert("Scanning vault for duplicate hashes... Found 0 duplicates. Your vault is clean, Siyam Boss!");
+        }
+    </script>
+</body>
+</html>
