@@ -3,174 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEROVEE - Private Vault</title>
+    <title>HEROVEE - Elite Vault</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@300;500&display=swap');
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background: #0b0d11; color: white; text-align: center; padding: 20px; }
+        body { background: #080a0c; color: #e0e0e0; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
 
-        h1 { font-family: 'Orbitron', sans-serif; margin: 20px 0; color: #45f3ff; letter-spacing: 2px; }
+        /* --- গ্রিডিয়েন্ট হেডার --- */
+        .header {
+            background: linear-gradient(180deg, rgba(184, 134, 11, 0.15), transparent);
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(184, 134, 11, 0.2);
+        }
+        .header h1 { font-family: 'Orbitron', sans-serif; color: #d4af37; letter-spacing: 4px; font-size: 24px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
 
-        /* প্রগ্রেস বার */
-        #pContainer { display: none; width: 100%; max-width: 400px; background: #222; height: 10px; border-radius: 10px; margin: 20px auto; overflow: hidden; border: 1px solid #333; }
-        #pBar { height: 100%; width: 0%; background: linear-gradient(90deg, #ff3c7b, #45f3ff); transition: 0.3s; }
+        /* --- স্ট্যাটাস বার --- */
+        .status-bar { display: flex; justify-content: space-around; margin: -20px auto 20px; width: 85%; background: #12161b; padding: 15px; border-radius: 15px; border: 1px solid #d4af3733; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .stat-item span { display: block; font-size: 18px; font-weight: bold; color: #d4af37; }
+        .stat-item label { font-size: 10px; text-transform: uppercase; opacity: 0.6; }
 
-        /* আপলোড জোন */
-        .upload-area { margin: 20px auto; width: 100%; max-width: 400px; padding: 40px 20px; border: 2px dashed #ff3c7b; border-radius: 20px; background: rgba(255, 60, 123, 0.05); cursor: pointer; }
-        .upload-area i { font-size: 45px; color: #ff3c7b; margin-bottom: 10px; }
+        /* --- গ্যালারি কার্ডস --- */
+        .gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        .vault-card {
+            background: #12161b;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            transition: 0.3s;
+        }
+        .vault-card img { width: 100%; aspect-ratio: 1/1.2; object-fit: cover; }
+        .card-info { padding: 10px; background: rgba(0,0,0,0.7); position: absolute; bottom: 0; width: 100%; font-size: 12px; }
 
-        /* গ্যালারি গ্রিড */
-        .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 30px; }
-        .gallery-item { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: #161a21; }
-        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+        /* --- ফ্লটিং অ্যাকশন বাটন --- */
+        .fab {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 70px; height: 70px;
+            background: linear-gradient(45deg, #d4af37, #f9e29c);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; color: #000; box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+            cursor: pointer; z-index: 100; border: 4px solid #080a0c;
+        }
 
-        /* ডিলিট বাটন */
-        .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(255, 60, 123, 0.9); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        /* --- আপলোড প্রগ্রেস --- */
+        #uploadOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 2000;
+        }
+        .loader-ring { width: 80px; height: 80px; border: 5px solid #222; border-top-color: #d4af37; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <h1>🔐 HEROVEE VAULT</h1>
-
-    <div id="pContainer">
-        <div id="pBar"></div>
+    <div id="uploadOverlay">
+        <div class="loader-ring"></div>
+        <p id="pText" style="margin-top: 20px; color: #d4af37; font-weight: bold;">Securing your memories...</p>
     </div>
 
-    <div class="upload-area" onclick="document.getElementById('fileInp').click()">
-        <i class="fas fa-shield-alt"></i>
-        <p style="font-weight: 600;">TAP TO SECURE PHOTOS</p>
-        <input type="file" id="fileInp" accept="image/*" multiple hidden>
+    <div class="header">
+        <h1>HEROVEE</h1>
+        <p style="font-size: 10px; opacity: 0.5; margin-top: 5px;">ELITE ENCRYPTED STORAGE</p>
+    </div>
+
+    <div class="status-bar">
+        <div class="stat-item"><span id="photoCount">0</span><label>Photos</label></div>
+        <div class="stat-item"><span id="vaultStatus">Active</span><label>Status</label></div>
     </div>
 
     <div class="gallery" id="gallery"></div>
+
+    <div class="fab" onclick="document.getElementById('vaultInp').click()">
+        <i class="fas fa-plus"></i>
+        <input type="file" id="vaultInp" multiple hidden accept="image/*">
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-        // আপনার ফায়ারবেস কনফিগ (আগের মতোই)
-        const firebaseConfig = {
-            apiKey: "AIzaSyAEl8t2m_HZ1oNOC49lmpiiM4-XhGzWRfE",
-            authDomain: "herovee.firebaseapp.com",
-            projectId: "herovee",
-            storageBucket: "herovee.firebasestorage.app",
-            messagingSenderId: "700112828047",
-            appId: "1:700112828047:web:988f0598b5341a29bba2fa"
-        };
-
+        // সিয়াম বস, এখানে আপনার ফায়ারবেস কনফিগ বসাবেন
+        const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain: "herovee.firebaseapp.com", projectId: "herovee", appId: "YOUR_APP_ID" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // গিটহাব কনফিগ
-        const TOKEN = "Ghp_g9UB5eMe7TQWVv8iUNeVAEiQvy3kfS1qrlzi"; // আপনার দেয়া টোকেন
-        const USER = "SIYAMBOSS";
+        const GITHUB_TOKEN = "Ghp_g9UB5eMe7TQWVv8iUNeVAEiQvy3kfS1qrlzi";
+        const GITHUB_USER = "SIYAMBOSS";
         const REPO = "Herovee1";
-        const BASE_FOLDER = "vault";
 
-        const gallery = document.getElementById("gallery");
-        const fileInp = document.getElementById("fileInp");
-        const pContainer = document.getElementById("pContainer");
-        const pBar = document.getElementById("pBar");
+        let userPath = "";
 
-        let currentUserEmail = "";
-
-        // ১. লগইন চেক এবং ইউজার ফোল্ডার সেটআপ
         onAuthStateChanged(auth, user => {
             if (user) {
-                currentUserEmail = user.email.replace(/[^a-zA-Z0-9]/g, "_");
+                // ইমেইল অনুযায়ী আলাদা ফোল্ডার পাথ
+                userPath = `vault/${user.email.replace(/[^a-zA-Z0-9]/g, "_")}`;
                 loadVault();
-            } else {
-                window.location.href = "index.html"; 
-            }
+            } else { window.location.href = "login.html"; }
         });
 
-        // ২. ইউজারের নির্দিষ্ট ফোল্ডার থেকে ছবি লোড করা
         async function loadVault() {
-            if (!currentUserEmail) return;
-            const fullPath = `${BASE_FOLDER}/${currentUserEmail}`;
-            
-            try {
-                const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${fullPath}`, {
-                    headers: { "Authorization": `token ${TOKEN}` }
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO}/contents/${userPath}`, {
+                headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('photoCount').innerText = data.length;
+                const gal = document.getElementById('gallery');
+                gal.innerHTML = "";
+                data.reverse().forEach(file => {
+                    const card = document.createElement('div');
+                    card.className = "vault-card";
+                    card.innerHTML = `<img src="${file.download_url}"><div class="card-info">Secured Image</div>`;
+                    gal.appendChild(card);
                 });
-
-                if (res.ok) {
-                    const files = await res.json();
-                    gallery.innerHTML = "";
-                    files.reverse().forEach(file => {
-                        if (file.type === "file") {
-                            createImgElement(file.download_url, file.path, file.sha);
-                        }
-                    });
-                } else {
-                    gallery.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5;'>Vault is empty</p>";
-                }
-            } catch (err) { console.error("Load Error:", err); }
+            }
         }
 
-        function createImgElement(src, path, sha) {
-            const div = document.createElement("div");
-            div.className = "gallery-item";
-            const img = document.createElement("img");
-            img.src = src;
-            img.loading = "lazy";
-            
-            const del = document.createElement("button");
-            del.className = "delete-btn";
-            del.innerHTML = '<i class="fas fa-trash"></i>';
-            del.onclick = () => deletePhoto(path, sha);
+        document.getElementById('vaultInp').onchange = async (e) => {
+            const files = e.target.files;
+            if(!files.length) return;
 
-            div.appendChild(img);
-            div.appendChild(del);
-            gallery.appendChild(div);
-        }
+            document.getElementById('uploadOverlay').style.display = 'flex';
 
-        // ৩. ইমেইল ফোল্ডার অনুযায়ী আপলোড
-        fileInp.onchange = async () => {
-            const files = fileInp.files;
-            if (files.length === 0 || !currentUserEmail) return;
-
-            pContainer.style.display = "block";
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                pBar.style.width = ((i + 1) / files.length * 100) + "%";
-
+            for(let i=0; i<files.length; i++) {
                 const reader = new FileReader();
-                reader.readAsDataURL(file);
-
+                reader.readAsDataURL(files[i]);
                 await new Promise(resolve => {
                     reader.onload = async () => {
                         const base64 = reader.result.split(',')[1];
-                        const fileName = `${BASE_FOLDER}/${currentUserEmail}/${Date.now()}_${file.name.replace(/\s/g, "_")}`;
-
-                        await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${fileName}`, {
+                        const name = `${userPath}/${Date.now()}_img.png`;
+                        
+                        await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO}/contents/${name}`, {
                             method: "PUT",
-                            headers: { "Authorization": `token ${TOKEN}` },
-                            body: JSON.stringify({ message: `vault upload by ${currentUserEmail}`, content: base64 })
+                            headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+                            body: JSON.stringify({ message: "vault_up", content: base64 })
                         });
                         resolve();
                     };
                 });
             }
-
-            pContainer.style.display = "none";
-            pBar.style.width = "0%";
+            document.getElementById('uploadOverlay').style.display = 'none';
             loadVault();
         };
-
-        // ৪. ডিলিট লজিক
-        async function deletePhoto(path, sha) {
-            if (!confirm("Delete this photo?")) return;
-            const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${path}`, {
-                method: "DELETE",
-                headers: { "Authorization": `token ${TOKEN}` },
-                body: JSON.stringify({ message: "delete photo", sha: sha })
-            });
-            if (res.ok) loadVault();
-        }
     </script>
 </body>
 </html>
